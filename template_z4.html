@@ -1,0 +1,77 @@
+<title>TMS Data Accuracy · HCM Zone 1 &amp; 3</title>
+<meta name="description" content="Bảng điều khiển KPI độ chính xác dữ liệu TMS — HCM Zone 1 &amp; 3, 6 tiêu chí.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;display=swap">
+<style>/*CSS*/
+#mth{font:inherit;padding:6px 10px;border-radius:8px}
+#mth[hidden]{display:none}
+</style>
+
+<a class="skip" href="#main">Bỏ qua, tới nội dung chính</a>
+<div id="tip" role="status" aria-live="polite"></div>
+<div id="sr" class="sr-only" role="status" aria-live="polite"></div>
+<div id="qm" hidden=""><div class="qm-bd" data-qclose=""></div>
+  <div class="qm-x" role="dialog" aria-modal="true" aria-labelledby="qm-t">
+    <div class="qm-h"><div><p class="qm-t" id="qm-t">—</p><p class="qm-s"></p></div>
+      <button type="button" class="qm-c" data-qclose="" aria-label="Đóng">✕</button></div>
+    <div class="qm-b"></div>
+    <div class="qm-f"></div>
+  </div></div>
+
+<!-- ============ MÀN HÌNH ĐĂNG NHẬP ============ -->
+<div id="login">
+  <form id="loginbox">
+    <div class="lgo">H</div>
+    <h2>TMS DATA ACCURACY</h2>
+    <p class="lsub">HEINEKEN EverGreen 2030 · Operation Excellence (DIP)<br>HCM Zone 1 &amp; 3 · Kỳ <span id="lperiod"></span><span class="upd-l" id="lupd"></span></p>
+    <p class="lwhat">Kết quả 7 tiêu chí và danh sách đơn lỗi.</p>
+    <label for="lu">Tên đăng nhập</label>
+    <input id="lu" name="username" type="text" placeholder="Mã NPP 8 chữ số hoặc admin" autocomplete="username" autocapitalize="off" spellcheck="false" aria-describedby="lerr" required="">
+    <label for="lp">Mật khẩu</label>
+    <input id="lp" name="password" type="password" placeholder="••••••••" autocomplete="current-password" aria-describedby="lerr" required="">
+    <div id="lerr" class="lerr" role="alert"></div>
+    <button type="submit" class="lbtn">Đăng nhập</button>
+    <p class="lnote">Mỗi NPP chỉ xem dữ liệu của mình. Cần hỗ trợ: liên hệ <span id="lcontact">quản lý vùng phụ trách NPP của anh/chị</span>.</p>
+  </form>
+</div>
+
+<header>
+  <div class="hrow">
+    <div class="logo">H</div>
+    <div>
+      <h1>TMS Data Accuracy · HCM Zone 1 &amp; 3</h1>
+      <div class="sub">HEINEKEN EverGreen 2030 · <span id="hmeta"></span><span class="upd" id="hupd"></span></div>
+    </div>
+    <div class="hspace"></div>
+    <div class="ctrl">
+      <span class="who" id="who"></span>
+      <select id="mth" aria-label="Chọn tháng"></select>
+      <select id="rls" aria-label="Chọn nhà phân phối để xem"></select>
+      <button class="btn" id="theme" aria-pressed="false">◐ Giao diện sáng / tối</button>
+      <button class="btn" id="logout">Đăng xuất</button>
+    </div>
+  </div>
+  <nav id="nav" role="tablist" aria-label="Các trang báo cáo"></nav>
+</header>
+<main id="main">
+  <div class="page on" id="p-overview" role="tabpanel" tabindex="-1" aria-labelledby="tab-overview"></div>
+  <div class="page" id="p-accuracy" role="tabpanel" tabindex="-1" aria-labelledby="tab-accuracy"></div>
+  <div class="page" id="p-geo" role="tabpanel" tabindex="-1" aria-labelledby="tab-geo"></div>
+  <div class="page" id="p-ontime" role="tabpanel" tabindex="-1" aria-labelledby="tab-ontime"></div>
+  <div class="page" id="p-kpi" role="tabpanel" tabindex="-1" aria-labelledby="tab-kpi"></div>
+  <div class="page" id="p-trend" role="tabpanel" tabindex="-1" aria-labelledby="tab-trend"></div>
+  <div class="page" id="p-errors" role="tabpanel" tabindex="-1" aria-labelledby="tab-errors"></div>
+  <div class="page" id="p-logic" role="tabpanel" tabindex="-1" aria-labelledby="tab-logic"></div>
+  <div class="page" id="p-dq" role="tabpanel" tabindex="-1" aria-labelledby="tab-dq"></div>
+</main>
+<footer> Nguồn: <code id="fsrc"></code> · Kỳ <span id="fperiod"></span> · Bản <span id="fver"></span> · Cập nhật <span class="upd-f" id="fupd"></span><br> Thắc mắc số liệu: gửi <span id="fcontact">quản lý vùng phụ trách NPP của anh/chị</span> · Cách chấm điểm xem tab <b>Cách chấm điểm</b>
+</footer>
+<noscript><p style="padding:24px;font:600 15px system-ui">Báo cáo này cần JavaScript để hiển thị. Vui lòng bật JavaScript trong trình duyệt.</p></noscript>
+
+
+
+
+<script type="text/plain" id="appsrc">/*APP*/</script>
+<script>/*ENC*/
+/*LOADER*/</script>
