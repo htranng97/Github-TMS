@@ -1,5 +1,5 @@
 # Tự build dashboard khi có file mới và đưa lên repo public (GitHub Pages)
-name: Cập nhật dashboard
+name: Cập nhật dashboard (v3 - token)
 
 on:
   push:
@@ -20,7 +20,7 @@ jobs:
       - name: Kiểm tra repo
         env:
           PASSWORDS_JSON: ${{ secrets.PASSWORDS_JSON }}
-          SITE_DEPLOY_KEY: ${{ secrets.SITE_DEPLOY_KEY }}
+          SITE_TOKEN: ${{ secrets.SITE_TOKEN }}
           SITE_REPO: ${{ vars.SITE_REPO }}
         run: |
           ok=1
@@ -29,7 +29,7 @@ jobs:
           done
           find . -name '*.xlsx' -not -path './.git/*' | grep -q . || { echo "::error::Chưa có file Excel (.xlsx) nào trong repo"; ok=0; }
           [ -n "$PASSWORDS_JSON" ] || { echo "::error::Chưa tạo secret PASSWORDS_JSON (Settings > Secrets and variables > Actions > Secrets)"; ok=0; }
-          [ -n "$SITE_DEPLOY_KEY" ] || { echo "::error::Chưa tạo secret SITE_DEPLOY_KEY (khoá deploy cho repo public)"; ok=0; }
+          [ -n "$SITE_TOKEN" ] || { echo "::error::Chưa tạo secret SITE_TOKEN (token có quyền ghi vào repo public)"; ok=0; }
           [ -n "$SITE_REPO" ] || { echo "::error::Chưa tạo biến SITE_REPO (Settings > Secrets and variables > Actions > Variables), ví dụ htranng97/tms-data-accuracy"; ok=0; }
           [ $ok = 1 ] && echo "Repo đủ file và cài đặt."
           [ $ok = 1 ]
@@ -52,9 +52,10 @@ jobs:
       - name: Đưa lên repo public
         uses: peaceiris/actions-gh-pages@v4
         with:
-          deploy_key: ${{ secrets.SITE_DEPLOY_KEY }}
+          personal_token: ${{ secrets.SITE_TOKEN }}
           external_repository: ${{ vars.SITE_REPO }}
           publish_branch: gh-pages
           publish_dir: ./site
           force_orphan: true
           commit_message: 'Cập nhật dashboard'
+
