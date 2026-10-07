@@ -24,7 +24,7 @@ jobs:
           SITE_REPO: ${{ vars.SITE_REPO }}
         run: |
           ok=1
-          for f in run_all.py build.py assemble.py template.html loader.js ref/app.js ref/css.txt ref/img0.txt ref/img1.txt; do
+          for f in run_z4.py build_z4.py build.py assemble.py patch_app.py patch_ux.py template_z4.html loader_z4.js z4ref/app.js z4ref/css.css; do
             [ -f "$f" ] || { echo "::error::Thiếu file $f: upload từ file zip lên repo, giữ đúng thư mục"; ok=0; }
           done
           find . -name '*.xlsx' -not -path './.git/*' | grep -q . || { echo "::error::Chưa có file Excel (.xlsx) nào trong repo"; ok=0; }
@@ -46,7 +46,7 @@ jobs:
           TZ: Asia/Ho_Chi_Minh
         run: |
           printf '%s' "$PASSWORDS_JSON" > passwords.json
-          python run_all.py
+          python run_z4.py
           rm -f passwords.json bundle.json
 
       - name: Kiểm tra token và repo public
