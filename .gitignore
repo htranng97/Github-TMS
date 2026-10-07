@@ -1,0 +1,8 @@
+passwords.json
+bundle.json
+dist/
+site/
+__pycache__/
+~$*
+*.tmp
+may_tinh/dong_bo.log

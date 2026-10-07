@@ -1,0 +1,58 @@
+<title>TMS Data Accuracy · HCM Zone 1 &amp; 3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;family=Lexend:wght@500;600;700&amp;display=swap">
+<style>
+/*CSS*/
+.ring .c b{font-size:clamp(1.5rem,4vw,2rem)}
+.lside h1 small{display:block;font-size:.5em;font-weight:600;margin-top:10px;opacity:.9;color:var(--leaf)}
+</style>
+
+<div id="login">
+  <section class="lside">
+    <div class="lhead"><!--EG-->
+      <div><span class="team">RTC · Future-Fit</span>
+      <h1>TMS Data<br>Accuracy<small>HCM Zone 1 &amp; 3</small></h1>
+      <p>Kết quả Data Accuracy theo tháng và chi tiết lỗi đến từng đơn, từng chuyến.</p></div></div>
+    <div style="display:grid;gap:16px"><div class="ff"><b>3</b><span>Future-Fit<br>Trụ cột thứ 3 · EverGreen 2030</span></div>
+    <div class="pills"><span>Payload</span><span>Distance &amp; Time</span><span>Created Date</span><span>User name</span></div></div>
+  </section>
+  <section class="lmain">
+    <form class="lcard" id="lform" autocomplete="off">
+      <div><h2>Đăng nhập</h2><p class="sub" id="lper"></p></div>
+      <div class="field"><label for="lu">Tên đăng nhập</label><input id="lu" autocomplete="username" placeholder="Mã NPP 8 chữ số, ví dụ 10260117" inputmode="numeric" required></div>
+      <div class="field"><label for="lp">Mật khẩu</label><input id="lp" type="password" autocomplete="current-password" required></div>
+      <p class="lerr" id="lerr" role="alert"></p>
+      <button class="btn primary" type="submit">Đăng nhập</button>
+      <p class="note">Mỗi NPP chỉ xem được số liệu của mình. Quên mật khẩu: liên hệ quản lý vùng.</p>
+    </form>
+  </section>
+</div>
+
+<div id="app" hidden>
+  <header class="top"><div class="wrap">
+    <div class="topin">
+      <div class="brand"><div class="mark"><!--MARK--></div><div><h1>TMS Data Accuracy <span class="team" style="margin-left:6px;vertical-align:2px">RTC · Future-Fit</span></h1><div class="meta" id="hmeta"></div></div></div>
+      <div class="tools">
+        <label class="who" for="scope" id="who"></label>
+        <select id="month" aria-label="Chọn tháng"></select>
+        <select id="scope" aria-label="Chọn NPP" hidden></select>
+        <button class="btn sm" id="theme" type="button" aria-pressed="false">Sáng / Tối</button>
+        <button class="btn sm" id="logout" type="button">Đăng xuất</button>
+      </div>
+    </div>
+    <nav class="tabs" id="tabs" role="tablist"></nav>
+  </div></header>
+  <main class="wrap" id="main"></main>
+  <footer class="wrap" id="foot"></footer>
+</div>
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+/*ENC*/
+/*LOADER*/
+</script>
+<script>
+/*APP*/
+</script>

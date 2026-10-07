@@ -1,0 +1,44 @@
+# Tự build dashboard mỗi khi có file mới trong data/ và đưa lên repo public (GitHub Pages)
+name: Cập nhật dashboard
+
+on:
+  push:
+    branches: [main]
+    paths: ['data/**', '*.py', 'template.html', 'loader.js', 'ref/**', '.github/workflows/build.yml']
+  workflow_dispatch:        # nút "Run workflow" để chạy tay
+
+concurrency:
+  group: build-dashboard
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - run: pip install pandas openpyxl cryptography
+
+      - name: Build
+        env:
+          PASSWORDS_JSON: ${{ secrets.PASSWORDS_JSON }}
+          TZ: Asia/Ho_Chi_Minh
+        run: |
+          printf '%s' "$PASSWORDS_JSON" > passwords.json
+          python run_all.py
+          rm -f passwords.json bundle.json
+
+      - name: Đưa lên repo public
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          deploy_key: ${{ secrets.SITE_DEPLOY_KEY }}
+          external_repository: ${{ vars.SITE_REPO }}   # ví dụ: nppzone13/tms-data-accuracy
+          publish_branch: gh-pages
+          publish_dir: ./site
+          force_orphan: true                           # không giữ lịch sử dữ liệu cũ
+          commit_message: 'Cập nhật dashboard'
