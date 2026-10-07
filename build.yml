@@ -1,0 +1,61 @@
+# Tự build dashboard khi có file mới và đưa lên repo public (GitHub Pages)
+name: Cập nhật dashboard (v3 - token)
+
+on:
+  push:
+    branches: [main]
+    paths: ['**.xlsx', '*.py', 'template.html', 'loader.js', 'ref/**', '.github/workflows/build.yml']
+  workflow_dispatch:        # nút "Run workflow" để chạy tay
+
+concurrency:
+  group: build-dashboard
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Kiểm tra repo
+        env:
+          PASSWORDS_JSON: ${{ secrets.PASSWORDS_JSON }}
+          SITE_TOKEN: ${{ secrets.SITE_TOKEN }}
+          SITE_REPO: ${{ vars.SITE_REPO }}
+        run: |
+          ok=1
+          for f in run_all.py build.py assemble.py template.html loader.js ref/app.js ref/css.txt ref/img0.txt ref/img1.txt; do
+            [ -f "$f" ] || { echo "::error::Thiếu file $f: upload từ file zip lên repo, giữ đúng thư mục"; ok=0; }
+          done
+          find . -name '*.xlsx' -not -path './.git/*' | grep -q . || { echo "::error::Chưa có file Excel (.xlsx) nào trong repo"; ok=0; }
+          [ -n "$PASSWORDS_JSON" ] || { echo "::error::Chưa tạo secret PASSWORDS_JSON (Settings > Secrets and variables > Actions > Secrets)"; ok=0; }
+          [ -n "$SITE_TOKEN" ] || { echo "::error::Chưa tạo secret SITE_TOKEN (token có quyền ghi vào repo public)"; ok=0; }
+          [ -n "$SITE_REPO" ] || { echo "::error::Chưa tạo biến SITE_REPO (Settings > Secrets and variables > Actions > Variables), ví dụ htranng97/tms-data-accuracy"; ok=0; }
+          [ $ok = 1 ] && echo "Repo đủ file và cài đặt."
+          [ $ok = 1 ]
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: pip install pandas openpyxl cryptography
+
+      - name: Build
+        env:
+          PASSWORDS_JSON: ${{ secrets.PASSWORDS_JSON }}
+          TZ: Asia/Ho_Chi_Minh
+        run: |
+          printf '%s' "$PASSWORDS_JSON" > passwords.json
+          python run_all.py
+          rm -f passwords.json bundle.json
+
+      - name: Đưa lên repo public
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          personal_token: ${{ secrets.SITE_TOKEN }}
+          external_repository: ${{ vars.SITE_REPO }}
+          publish_branch: gh-pages
+          publish_dir: ./site
+          force_orphan: true
+          commit_message: 'Cập nhật dashboard'
+
