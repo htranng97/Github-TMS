@@ -47,9 +47,12 @@ def npp_view(B, npp):
 def main(bundle_path):
     B = json.load(open(bundle_path))
     pw_path = os.path.join(HERE, 'passwords.json')
-    PW = json.load(open(pw_path)) if os.path.exists(pw_path) else {}
+    try:
+        PW = json.load(open(pw_path, encoding='utf-8-sig')) if os.path.exists(pw_path) and os.path.getsize(pw_path) else {}
+    except ValueError as e:
+        print(f'::error::Secret PASSWORDS_JSON sai định dạng (thiếu dấu phẩy/ngoặc kép?): {e}'); sys.exit(1)
     CI = bool(os.environ.get('CI'))  # chạy trên GitHub: không tự tạo mật khẩu mới (sẽ bị mất)
-    if CI and 'admin' not in PW: sys.exit('Thiếu mật khẩu admin trong secret PASSWORDS_JSON')
+    if CI and 'admin' not in PW: print('::error::Secret PASSWORDS_JSON thiếu tài khoản admin hoặc dán sai định dạng'); sys.exit(1)
     PW.setdefault('admin', dict(npp='ALL', name='Admin HCM Zone 1 & 3', pw=gen_pw(12)))
     info = {}
     for m in B['order']: info.update(B['months'][m]['npp_info'])

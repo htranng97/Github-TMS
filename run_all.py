@@ -18,8 +18,9 @@ def kind(path):
     if {'DocNo', 'Sent_To_distributor'} <= cols: return 'fr'
     return None
 
-files = [p for p in glob.glob(os.path.join(HERE, 'data', '**', '*.xlsx'), recursive=True)
-         if not os.path.basename(p).startswith('~$')]
+files = [p for p in glob.glob(os.path.join(HERE, '**', '*.xlsx'), recursive=True)
+         if not os.path.basename(p).startswith('~$') and os.sep + '.' not in os.path.relpath(p, HERE)
+         and not os.path.relpath(p, HERE).startswith(('site', 'dist'))]
 files.sort(key=lambda p: (os.path.basename(p), p))
 T, F = [], []
 for p in files:
@@ -28,7 +29,9 @@ for p in files:
     elif k == 'fr': F.append(build.read_x(p, dtype=build.FR_DT))
     else: print('Bỏ qua (không nhận ra loại file):', os.path.relpath(p, HERE)); continue
     print(f'{k.upper():3}  {os.path.relpath(p, HERE)}')
-if not T or not F: sys.exit('Cần ít nhất 1 file TMS Order Detail và 1 file Fill Rate trong data/')
+if not T or not F:
+    print('::error::Cần ít nhất 1 file TMS Order Detail và 1 file Fill Rate (.xlsx) trong repo. Đang có: '
+          f'{len(T)} file TMS, {len(F)} file Fill Rate.'); sys.exit(1)
 
 t = pd.concat(T, ignore_index=True).drop_duplicates('OrderNumber', keep='last')
 f = pd.concat(F, ignore_index=True).drop_duplicates('DocNo', keep='last')
