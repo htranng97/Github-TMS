@@ -1,5 +1,5 @@
 # Tự build dashboard khi có file mới và đưa lên repo public (GitHub Pages)
-name: Cập nhật dashboard (v4)
+name: Cập nhật dashboard (v5)
 
 on:
   push:
@@ -55,10 +55,17 @@ jobs:
           SITE_REPO: ${{ vars.SITE_REPO }}
         run: |
           REPO="$(echo "$SITE_REPO" | tr -d '[:space:]' | sed -e 's#^https\?://github.com/##' -e 's#\.git$##' -e 's#/$##')"
+          TOKEN="$(printf '%s' "$TOKEN" | tr -d '[:space:]')"
+          echo "::add-mask::$TOKEN"
+          case "$TOKEN" in
+            github_pat_*|ghp_*) echo "Secret SITE_TOKEN có dạng token GitHub (dài ${#TOKEN} ký tự).";;
+            "") echo "::error::Secret SITE_TOKEN đang trống."; exit 1;;
+            *) echo "::error::Secret SITE_TOKEN không phải token GitHub: token phải bắt đầu bằng github_pat_ hoặc ghp_. Có thể bạn đã dán nhầm (tên token, mật khẩu, khoá SSH...)."; exit 1;;
+          esac
           echo "SITE_REPO đang là: '$SITE_REPO'"
           case "$REPO" in */*) ;; *) echo "::error::SITE_REPO phải có dạng tài-khoản/tên-repo, ví dụ htranng97/tms-dashboard. Hiện đang là '$SITE_REPO'"; exit 1;; esac
           code=$(curl -s -o /tmp/u.json -w '%{http_code}' -H "Authorization: Bearer $TOKEN" https://api.github.com/user)
-          if [ "$code" != 200 ]; then echo "::error::Token trong secret SITE_TOKEN không hợp lệ hoặc đã hết hạn (HTTP $code). Tạo token mới và dán lại vào secret."; exit 1; fi
+          if [ "$code" != 200 ]; then echo "::error::Token trong secret SITE_TOKEN không hợp lệ hoặc đã hết hạn (HTTP $code). Token sai, đã bị xoá hoặc hết hạn: tạo token mới và dán lại vào secret."; exit 1; fi
           echo "Token thuộc tài khoản: $(python3 -c 'import json;print(json.load(open("/tmp/u.json"))["login"])')"
           code=$(curl -s -o /tmp/r.json -w '%{http_code}' -H "Authorization: Bearer $TOKEN" https://api.github.com/repos/$REPO)
           if [ "$code" = 404 ]; then echo "::error::Không thấy repo '$REPO'. Hoặc repo chưa được tạo / sai tên, hoặc token chưa được cấp quyền vào repo này (sửa token > Repository access > thêm repo '$REPO')."; exit 1; fi
@@ -73,12 +80,13 @@ jobs:
           PY
           git ls-remote "https://x-access-token:${TOKEN}@github.com/$REPO" >/dev/null 2>&1 || { echo "::error::Token không dùng được để đẩy code vào '$REPO'. Sửa token > Permissions > Contents: Read and write, và Repository access có repo này."; exit 1; }
           echo "REPO_CLEAN=$REPO" >> "$GITHUB_ENV"
+          echo "TOKEN_CLEAN=$TOKEN" >> "$GITHUB_ENV"
           echo "Token và repo public OK."
 
       - name: Đưa lên repo public
         uses: peaceiris/actions-gh-pages@v4
         with:
-          personal_token: ${{ secrets.SITE_TOKEN }}
+          personal_token: ${{ env.TOKEN_CLEAN }}
           external_repository: ${{ env.REPO_CLEAN }}
           publish_branch: gh-pages
           publish_dir: ./site
