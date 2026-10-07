@@ -1,5 +1,5 @@
 # Tự build dashboard khi có file mới và đưa lên repo public (GitHub Pages)
-name: Cập nhật dashboard (v5)
+name: Cập nhật dashboard (v7 - 7 tiêu chí)
 
 on:
   push:
