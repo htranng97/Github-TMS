@@ -1,5 +1,5 @@
 # Tự build dashboard khi có file mới và đưa lên repo public (GitHub Pages)
-name: Cập nhật dashboard (v7 - 7 tiêu chí)
+name: Cập nhật dashboard (v10 - Payload <5% từ T9)
 
 on:
   push:
@@ -24,7 +24,7 @@ jobs:
           SITE_REPO: ${{ vars.SITE_REPO }}
         run: |
           ok=1
-          for f in run_z4.py build_z4.py build.py assemble.py patch_app.py patch_ux.py template_z4.html loader_z4.js z4ref/app.js z4ref/css.css; do
+          for f in run_z4.py build_z4.py build.py assemble.py patch_app.py patch_ux.py patch_text.py patch_text2.py patch_payload.py template_z4.html loader_z4.js z4ref/app.js z4ref/css.css; do
             [ -f "$f" ] || { echo "::error::Thiếu file $f: upload từ file zip lên repo, giữ đúng thư mục"; ok=0; }
           done
           find . -name '*.xlsx' -not -path './.git/*' | grep -q . || { echo "::error::Chưa có file Excel (.xlsx) nào trong repo"; ok=0; }

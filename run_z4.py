@@ -1,4 +1,4 @@
-"""Dựng dashboard 6 tiêu chí cho HCM Zone 1 & 3 từ mọi file .xlsx trong repo/thư mục.
+"""Dựng dashboard 7 tiêu chí cho HCM Zone 1 & 3 từ mọi file .xlsx trong repo/thư mục.
 python run_z4.py  ->  site/index.html (GitHub Pages) + dist/z4_artifact.html
 Mật khẩu: passwords.json (hoặc secret PASSWORDS_JSON trên GitHub).
 """
@@ -46,6 +46,7 @@ else:
     REG, PER = {}, {}
     for m in order:
         x = months[m]
+        Z.set_month(m)
         D = Z.build(x, src, built); REG[m] = D
         for n in D['sentinel'] if False else [s['npp'] for s in D['scorecard']]:
             d = Z.build(x[x.npp == n], src, built)
@@ -90,7 +91,12 @@ import patch_app
 app, miss = patch_app.patch(app)
 import patch_ux
 app, miss2 = patch_ux.patch(app)
-if miss or miss2: print('::warning::Không vá được:', miss + miss2)
+import patch_text, patch_text2
+app, miss3 = patch_text.patch(app)
+app, miss4 = patch_text2.patch(app)
+import patch_payload
+app, miss5 = patch_payload.patch(app)
+if miss or miss2 or miss3 or miss4 or miss5: print('::warning::Không vá được:', miss + miss2 + miss3 + miss4 + miss5)
 tpl = open('template_z4.html').read()
 loader = open('loader_z4.js').read()
 page = (tpl.replace('/*CSS*/', open('z4ref/css.css').read() + patch_ux.CSS).replace('/*APP*/', app)

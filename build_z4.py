@@ -1,12 +1,21 @@
-"""TMS Data Accuracy – HCM Zone 1 & 3, chấm theo bộ 6 tiêu chí (mẫu dashboard Zone 4).
+"""TMS Data Accuracy – HCM Zone 1 & 3, chấm theo bộ 7 tiêu chí (mẫu dashboard Zone 4).
 Chỉ cần file TMS Order Detail. Xuất DATA theo đúng cấu trúc giao diện mẫu, mỗi tháng một DATA.
 """
 import math, re, datetime as dt
 import numpy as np, pandas as pd
 
-TH = {"username": 100.0, "distance_time": 100.0, "geo": 85.0, "ontime": 95.0, "successful": 95.0, "payload": 100.0,
+TH = {"username": 100.0, "distance_time": 100.0, "geo": 85.0, "ontime": 95.0, "successful": 95.0, "payload": 100.0, "payload_month_pct": 0.05,
       "dt_route_pct": 0.3, "dt_month_pct": 0.05, "dt_routes_month": 10, "dt_max_bad_outlets": 4, "dt_gap_min": 2,
       "geo_radius_m": 50, "geo_gap_min": 2, "payload_ratio": 1.5, "work_start": 6, "work_end": 20, "small_sample": 30}
+PAYLOAD_PCT_FROM = '2026-09'   # từ tháng này Payload được phép < 5% số chuyến; trước đó phải 0 chuyến
+
+def set_month(m):
+    TH['payload_month_pct'] = 0.05 if m >= PAYLOAD_PCT_FROM else 0.0
+
+def pl_ok(nfail, nplans):
+    pm = TH['payload_month_pct']
+    return nfail == 0 if pm <= 0 else pct(nfail, nplans) < pm * 100
+
 BU, REGION = 'Greater HCM', 'HCM Zone 1 & 3'
 EXCLUDE = [('16/09/2026', '23/09/2026')]
 EK = ['Date', 'BU', 'Region', 'TenantName', 'PlanNumber', 'DriverName', 'Assigned_Weight', 'Assigned_Quantity', 'OutletCode',
@@ -112,7 +121,7 @@ def score(x, key, extra=True):
              geo_v_fail=int(nds.g_v.sum()), geo_w_fail=int(nds.g_w.sum()), geo_x_fail=int(nds.g_x.sum()),
              geo_x_only=int((nds.g_x & ~nds.g_v & ~nds.g_w).sum()),
              ot_pct=pct(o - int(x.ot_fail.sum()), o), ot_fail=int(x.ot_fail.sum()),
-             payload_plans_fail=plf, payload_pct=pct(pl - plf, pl), payload_max_ratio=r2(x.plan_ratio.max()) or 0,
+             payload_plans_fail=plf, payload_pct=pct(pl - plf, pl), payload_fail_pct=pct(plf, pl) if pl else 0.0, payload_max_ratio=r2(x.plan_ratio.max()) or 0,
              wh_pct=pct(o - int(x.g_x.sum()), o), wh_fail=int(x.g_x.sum()),
              cd_fail=int(x.cd_fail.sum()), cd_routes_fail=x[x.cd_fail].PlanNumber.nunique(),
              cd_scope=int(x.Sent_To_distributor.notna().sum()))
@@ -120,7 +129,7 @@ def score(x, key, extra=True):
         s['user_types'] = {k: int(v) for k, v in x.utype.value_counts().items()}
         s.update(v_username=P(s['username_fail'] == 0), v_dt=P(s['dt_route_fail_pct'] < TH['dt_month_pct'] * 100),
                  v_geo=P(s['geo_pct'] >= TH['geo']), v_ontime=P(s['ot_pct'] > TH['ontime']),
-                 v_successful=P(s['ot_pct'] > TH['successful']), v_payload=P(plf == 0), v_created=P(s['cd_routes_fail'] == 0))
+                 v_successful=P(s['ot_pct'] > TH['successful']), v_payload=P(pl_ok(plf, pl)), v_created=P(s['cd_routes_fail'] == 0))
         v = [s[k] for k in ('v_username', 'v_dt', 'v_geo', 'v_ontime', 'v_successful', 'v_payload', 'v_created')]
         s['n_fail'] = v.count('FAIL'); s['overall'] = P(s['n_fail'] == 0)
     return s
@@ -133,7 +142,7 @@ def verdict(x, geo_r=None, delivered=False, capfix=False):
     gf = int((~nds.dsa & (gv | nds.g_w | nds.g_x)).sum())
     geo = pct(len(nds) - gf, len(nds)) >= TH['geo']
     ot = pct(len(x) - int(x.ot_fail.sum()), len(x)) > TH['ontime']
-    pl = x[(x.plan_ratio_best if capfix else x.plan_ratio) >= TH['payload_ratio']].PlanNumber.nunique() == 0
+    pl = pl_ok(x[(x.plan_ratio_best if capfix else x.plan_ratio) >= TH['payload_ratio']].PlanNumber.nunique(), x.PlanNumber.nunique())
     dt_ = pct(x[x.dt_route_fail].PlanNumber.nunique(), x.PlanNumber.nunique()) < TH['dt_month_pct'] * 100
     un = int(x.un_fail.sum()) == 0
     cd = int(x.cd_fail.sum()) == 0
@@ -159,7 +168,7 @@ def build(t, src='TMS Order Detail', built=None, month_key=None):
     D = {}
     D['meta'] = dict(period=f"{d0:%d/%m/%Y} – {d1:%d/%m/%Y}", orders=len(t), plans=int(t.PlanNumber.nunique()), npps=len(npps),
                      bu=BU, region=REGION, source=src, days=int(t.Date.dt.normalize().nunique()), excluded=excluded)
-    D['thresholds'] = TH; D['scorecard'] = SC; D['total'] = tot
+    D['thresholds'] = dict(TH); D['scorecard'] = SC; D['total'] = tot
     # đơn lỗi
     e = t[t.err].sort_values(['Date', 'npp', 'PlanNumber', 'seq1'])
     def row(r):
@@ -299,7 +308,7 @@ def build(t, src='TMS Order Detail', built=None, month_key=None):
         D['margin'][s['npp']] = dict(geo_ok=gok, geo_n=s['geo_scope_orders'], geo_need=gneed, geo_margin=gok - gneed, geo_ci=gci,
                                      geo_straddle=gci[0] < TH['geo'] < gci[1], ot_ok=ook, ot_n=s['orders'], ot_need=oneed,
                                      ot_margin=ook - oneed, ot_ci=oci, ot_straddle=oci[0] < TH['ontime'] < oci[1],
-                                     dt_margin=round(TH['dt_month_pct'] * 100 - s['dt_route_fail_pct'], 2), pl_margin=-s['payload_plans_fail'])
+                                     dt_margin=round(TH['dt_month_pct'] * 100 - s['dt_route_fail_pct'], 2), pl_margin=round(TH['payload_month_pct'] * 100 - s['payload_fail_pct'], 2))
         D['dt_quota'][s['npp']] = dict(fail_routes=s['dt_routes_fail'], total_routes=s['plans'], pct=s['dt_route_fail_pct'],
                                        pct_threshold=TH['dt_month_pct'] * 100, margin_pct=D['margin'][s['npp']]['dt_margin'],
                                        days_done=days, days_left=int((month_end - d1).days))
